@@ -93,6 +93,7 @@
     <orderEntry type="library" exported="" name="gson-2.3.1" level="project" />
     <orderEntry type="library" exported="" name="riot-api-java" level="project" />
     <orderEntry type="library" exported="" name="1_riot-api-java" level="project" />
+    <orderEntry type="library" exported="" name="picasso-2.5.2" level="project" />
     <orderEntry type="library" exported="" name="gson-2.2.4-javadoc" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-22.1.1" level="project" />
     <orderEntry type="library" exported="" name="gson-2.2.4-sources" level="project" />

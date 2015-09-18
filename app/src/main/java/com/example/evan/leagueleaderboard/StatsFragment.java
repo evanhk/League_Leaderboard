@@ -51,7 +51,8 @@ public class StatsFragment extends Fragment implements LoaderManager.LoaderCallb
             SummonerContract.SummonerEntry.TABLE_NAME + "." + SummonerContract.SummonerEntry._ID,
             SummonerContract.SummonerEntry.COLUMN_RIOT_ID,
             SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME,
-            SummonerContract.SummonerEntry.COLUMN_SUMMONER_LEVEL
+            SummonerContract.SummonerEntry.COLUMN_SUMMONER_LEVEL,
+            SummonerContract.SummonerEntry.COLUMN_PROFILE_ICON
     };
 
     static final int COL_STATS_ID = 0;
@@ -72,6 +73,7 @@ public class StatsFragment extends Fragment implements LoaderManager.LoaderCallb
     static final int COL_RIOT_ID = 15;
     static final int COL_SUMMONER_NAME = 16;
     static final int COL_SUMMONER_LEVEL = 17;
+    static final int COL_PROFILE_ICON = 18;
 
     private SummonerAdapter mSummonerAdapter;
     private String[] summonerList;
