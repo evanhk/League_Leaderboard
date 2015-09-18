@@ -1,0 +1,19 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+
+    <!-- NOTE: EditTextPreference accepts EditText attributes. -->
+    <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
+    <com.example.evan.leagueleaderboard.AddSummonerPref
+        android:key="Add_Summoner_Pref"
+        android:title="Add Summoners"
+        android:defaultValue="Summoner"
+        android:selectAllOnFocus="true"
+        android:inputType="textCapWords"
+        android:capitalize="none"
+        android:singleLine="true"
+        android:maxLines="1" />
+
+
+
+</PreferenceScreen>
