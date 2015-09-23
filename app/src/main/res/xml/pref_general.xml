@@ -9,10 +9,21 @@
         android:title="Add Summoners"
         android:defaultValue="Summoner"
         android:selectAllOnFocus="true"
-        android:inputType="textCapWords"
+        android:inputType="text"
         android:capitalize="none"
         android:singleLine="true"
         android:maxLines="1" />
+
+    <MultiSelectListPreference
+        android:key="Remove_Summoner"
+        android:title="Remove Summoner"/>
+    <ListPreference
+        android:key="Queue_Type"
+        android:title="Queue Type"
+        android:entries="@array/queue_type_array"
+        android:entryValues="@array/queue_type_array"
+        android:defaultValue="unranked"/>
+
 
 
 

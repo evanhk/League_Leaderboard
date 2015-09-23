@@ -2,6 +2,7 @@ package com.example.evan.leagueleaderboard;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -10,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
+import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
@@ -21,7 +23,9 @@ import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -47,6 +51,9 @@ public class SettingsActivity extends PreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+
+
+
     }
 
     /**
@@ -106,12 +113,19 @@ public class SettingsActivity extends PreferenceActivity {
         getPreferenceScreen().addPreference(fakeHeader);
         addPreferencesFromResource(R.xml.pref_notification);
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        Set<String> summonerList = prefs.getStringSet("Add_Summoners_Set", new HashSet<String>());
+        CharSequence[] entries = summonerList.toArray(new CharSequence[]{});
+        MultiSelectListPreference lp = (MultiSelectListPreference) findPreference("Remove_Summoner");
+        lp.setEntryValues(entries);
+        lp.setEntries(entries);
+
 
 
 
     }
 
-    
+
 
 
 

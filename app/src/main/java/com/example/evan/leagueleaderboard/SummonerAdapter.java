@@ -1,7 +1,9 @@
 package com.example.evan.leagueleaderboard;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -51,32 +53,62 @@ public class SummonerAdapter extends CursorAdapter{
         String iconURL = "http://ddragon.leagueoflegends.com/cdn/5.18.1/img/profileicon/" +
                 String.valueOf(cursor.getInt(StatsFragment.COL_PROFILE_ICON)) +".png";
 
-        Picasso.with(context).load(iconURL).into(viewHolder.iconview);
+        //Determining Queue Type
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        String qType = pref.getString("Queue_Type", "unranked");
 
+        //Summoner Icon
+        Picasso.with(context).load(iconURL).into(viewHolder.iconview);
+        //Summoner Name
         viewHolder.summonerView.setText(
                cursor.getString(StatsFragment.COL_SUMMONER_NAME)
         );
 
-        viewHolder.winsView.setText(
-                String.valueOf(cursor.getInt(StatsFragment.COL_UNR_WINS))
-        );
+        if(qType.equals("unranked")) {
+            viewHolder.winsView.setText(
+                    String.valueOf(cursor.getInt(StatsFragment.COL_UNR_WINS))
+            );
 
-        viewHolder.killsView.setText(
-                String.valueOf(cursor.getInt(StatsFragment.COL_UNR_KILLS))
-        );
-        viewHolder.assistsView.setText(
-                String.valueOf(cursor.getInt(StatsFragment.COL_UNR_ASSISTS))
-        );
-        if(landsacpe) {
-            viewHolder.minionsView.setText(
-                    String.valueOf(cursor.getInt(StatsFragment.COL_UNR_MINIONS))
+            viewHolder.killsView.setText(
+                    String.valueOf(cursor.getInt(StatsFragment.COL_UNR_KILLS))
             );
-            viewHolder.neutralsView.setText(
-                    String.valueOf(cursor.getInt(StatsFragment.COL_UNR_NEUTRAL))
+            viewHolder.assistsView.setText(
+                    String.valueOf(cursor.getInt(StatsFragment.COL_UNR_ASSISTS))
             );
-            viewHolder.turretsView.setText(
-                    String.valueOf(cursor.getInt(StatsFragment.COL_UNR_TURRETS))
+            if (landsacpe) {
+                viewHolder.minionsView.setText(
+                        String.valueOf(cursor.getInt(StatsFragment.COL_UNR_MINIONS))
+                );
+                viewHolder.neutralsView.setText(
+                        String.valueOf(cursor.getInt(StatsFragment.COL_UNR_NEUTRAL))
+                );
+                viewHolder.turretsView.setText(
+                        String.valueOf(cursor.getInt(StatsFragment.COL_UNR_TURRETS))
+                );
+            }
+        }
+        else if (qType.equals("ranked")){
+            viewHolder.winsView.setText(
+                    String.valueOf(cursor.getInt(StatsFragment.COL_RANK_WINS))
             );
+
+            viewHolder.killsView.setText(
+                    String.valueOf(cursor.getInt(StatsFragment.COL_RANK_KILLS))
+            );
+            viewHolder.assistsView.setText(
+                    String.valueOf(cursor.getInt(StatsFragment.COL_RANK_ASSISTS))
+            );
+            if (landsacpe) {
+                viewHolder.minionsView.setText(
+                        String.valueOf(cursor.getInt(StatsFragment.COL_RANK_MINIONS))
+                );
+                viewHolder.neutralsView.setText(
+                        String.valueOf(cursor.getInt(StatsFragment.COL_RANK_NEUTRAL))
+                );
+                viewHolder.turretsView.setText(
+                        String.valueOf(cursor.getInt(StatsFragment.COL_RANK_TURRETS))
+                );
+            }
         }
     }
 

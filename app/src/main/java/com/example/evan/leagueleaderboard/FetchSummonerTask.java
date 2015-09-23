@@ -26,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Evan on 8/30/2015.
@@ -58,7 +59,7 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
             recordExists = true;
             Log.i(LOG_TAG, "Summoner" + summoner + " already in database ");
         } else{
-            //Creating valies to insert to database
+            //Creating values to insert to database
             ContentValues summonerValues = new ContentValues();
 
             summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME, summoner.getName());
@@ -111,6 +112,8 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
 
                summoner = api.getSummonerByName(params[0][i]);
                summonerRow = addSummoner(summoner);
+
+
 
                List<PlayerStatsSummary> statsList = api.getPlayerStatsSummary(summoner.getId())
                        .getPlayerStatSummaries();

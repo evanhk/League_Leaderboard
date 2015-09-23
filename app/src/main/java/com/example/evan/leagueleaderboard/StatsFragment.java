@@ -1,5 +1,6 @@
 package com.example.evan.leagueleaderboard;
 
+import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.database.DatabaseUtils;
 import android.preference.Preference;
@@ -24,7 +25,10 @@ import android.widget.ListView;
 import com.example.evan.leagueleaderboard.data.SummonerContract;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+
+import dto.Summoner.Summoner;
 
 /**
  * Created by Evan on 9/2/2015.
@@ -128,9 +132,39 @@ public class StatsFragment extends Fragment implements LoaderManager.LoaderCallb
         // Pretty inefficient, will improve later
         pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         Set<String> s = pref.getStringSet("Add_Summoners_Set", new HashSet<String>());
+
+        //Removing Summoners
+        //NOTE: not the cleanest implementation, TODO improve
+        Set<String> rem = pref.getStringSet("Remove_Summoner", new HashSet<String>());
+        ContentResolver cr = getActivity().getContentResolver();
+
+        for (Iterator<String> i = rem.iterator() ; i.hasNext() ; ){
+            String toDelete = i.next();
+            Cursor se = cr.query(SummonerContract.SummonerEntry.CONTENT_URI, new String[]{SummonerContract.SummonerEntry._ID},
+                    SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING + " = ?",
+                    new String[]{toDelete},null);
+            if(se.moveToNext()) {
+                cr.delete(SummonerContract.SummonerEntry.CONTENT_URI,
+                        SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING + " = ?",
+                        new String[]{toDelete}
+                );
+                cr.delete(SummonerContract.StatsEntry.CONTENT_URI,
+                        SummonerContract.StatsEntry.COLUMN_SUM_KEY + " = ?",
+                        new String[]{String.valueOf(se.getInt(0))}
+                ); //TODO make add summoners only accept lower case
+            }
+
+        }
+        s.removeAll(rem);
+
+        //Saving correct ADD_SUMMONERS_PREF and clearing REMOVE SUMMOENRS
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putStringSet("Add_Summoners_set", s);
+        editor.putStringSet("Remove_Summoner", new HashSet<String>());
+        editor.apply();
+
         String[] summoners = s.toArray(new String[]{});
         summonerTask.execute(summoners);
-        //Log.d("Stats tag", "Called asynctask");
     }
 
     public void clearDB(){
@@ -143,6 +177,7 @@ public class StatsFragment extends Fragment implements LoaderManager.LoaderCallb
         editor.putStringSet("Add_Summoners_Set", new HashSet<String>(){});
         editor.apply();
     }
+
 
     @Override
     public void onResume(){
