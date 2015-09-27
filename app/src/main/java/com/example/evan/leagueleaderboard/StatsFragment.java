@@ -1,6 +1,7 @@
 package com.example.evan.leagueleaderboard;
 
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.database.DatabaseUtils;
 import android.preference.Preference;
@@ -21,8 +22,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.evan.leagueleaderboard.data.SummonerContract;
+
+import org.w3c.dom.Text;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,7 +37,7 @@ import dto.Summoner.Summoner;
 /**
  * Created by Evan on 9/2/2015.
  */
-public class StatsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class StatsFragment extends Fragment implements View.OnClickListener, LoaderManager.LoaderCallbacks<Cursor> {
     public StatsFragment(){}
     private static final int SUMMONER_LOADER = 0;
 
@@ -110,20 +114,40 @@ public class StatsFragment extends Fragment implements LoaderManager.LoaderCallb
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                            Bundle savedInstanceState){
-        mSummonerAdapter = new SummonerAdapter(getActivity(), null ,0);
+                            Bundle savedInstanceState) {
+        mSummonerAdapter = new SummonerAdapter(getActivity(), null, 0);
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ListView listView = (ListView) rootView.findViewById(R.id.listview);
 
         listView.setAdapter(mSummonerAdapter);
         //TODO add setOnItemClickListener
 
+        TextView click = (TextView) rootView.findViewById(R.id.summoner_header);
+        click.setOnClickListener(this);
+        click = (TextView) rootView.findViewById(R.id.wins_header);
+        click.setOnClickListener(this);
+        click = (TextView) rootView.findViewById(R.id.kills_header);
+        click.setOnClickListener(this);
+        click = (TextView) rootView.findViewById(R.id.assists_header);
+        click.setOnClickListener(this);
+        click = (TextView) rootView.findViewById(R.id.cs_header);
+        if (click != null){
+            click.setOnClickListener(this);
+            click = (TextView) rootView.findViewById(R.id.neutrals_header);
+            click.setOnClickListener(this);
+            click = (TextView) rootView.findViewById(R.id.turrets_header);
+            click.setOnClickListener(this);
+        }
         return rootView;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState){
-        getLoaderManager().initLoader(SUMMONER_LOADER, null, this);
+        //Bundling Default Sort order
+        Bundle defaultSortOrder = new Bundle();
+        defaultSortOrder.putInt("sortOrder", R.id.kills_header);
+
+        getLoaderManager().initLoader(SUMMONER_LOADER, defaultSortOrder, this);
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -187,6 +211,12 @@ public class StatsFragment extends Fragment implements LoaderManager.LoaderCallb
 
 
 
+    public void onClick(View v){
+        int viewId = v.getId();
+        Bundle order = new Bundle();
+        order.putInt("sortOrder",viewId);
+        getLoaderManager().restartLoader(SUMMONER_LOADER,order,this);
+    }
 
 
     ///////////    LOADER METHODS  //////////////////////////////////
@@ -194,7 +224,7 @@ public class StatsFragment extends Fragment implements LoaderManager.LoaderCallb
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
         Uri tableUri = SummonerContract.StatsEntry.buildStatsUri();
-        String sortOrder = SummonerContract.StatsEntry.COLUMN_UNR_KILLS + " DESC";
+        String sortOrder = Utility.getSortOrder(getActivity(),args.getInt("sortOrder"));
 
         return new CursorLoader(getActivity(),
                 tableUri,

@@ -38,10 +38,11 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
     private final Context mContext;
     private SummonerDbHelper mOpenHelper;
     private boolean recordExists = false;
+    private RiotApi api;
 
     public FetchSummonerTask (Context context){mContext = context;}
 
-    long addSummoner(Summoner summoner){
+    long addSummoner(String summonerName){
         long summonerId = -1;
 
        // Checking if Summoner is already in database
@@ -49,7 +50,7 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
                 SummonerContract.SummonerEntry.CONTENT_URI,
                 new String[] {SummonerContract.SummonerEntry._ID},
                 SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING + " = ?",
-                new String[]{summoner.getName().toLowerCase()},
+                new String[]{summonerName},
                 null
         );
 
@@ -57,27 +58,34 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
             int summonerIdIndex = summonerCursor.getColumnIndex(SummonerContract.SummonerEntry._ID);
             summonerId = summonerCursor.getLong(summonerIdIndex);
             recordExists = true;
-            Log.i(LOG_TAG, "Summoner" + summoner + " already in database ");
+            Log.i(LOG_TAG, "Summoner" + summonerName + " already in database ");
         } else{
-            //Creating values to insert to database
-            ContentValues summonerValues = new ContentValues();
+            try {
 
-            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME, summoner.getName());
-            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_LEVEL, summoner.getSummonerLevel());
-            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_RIOT_ID, summoner.getId());
-            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_PROFILE_ICON, summoner.getProfileIconId());
-            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING, summoner.getName().toLowerCase());
+                //Creating values to insert to database
+                ContentValues summonerValues = new ContentValues();
+                Summoner summoner = api.getSummonerByName(summonerName);
 
-            //Insert data into database
-            Uri insertedUri = mContext.getContentResolver().insert(
-                    SummonerContract.SummonerEntry.CONTENT_URI,
-                    summonerValues
-            );
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME, summoner.getName());
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_LEVEL, summoner.getSummonerLevel());
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_RIOT_ID, summoner.getId());
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_PROFILE_ICON, summoner.getProfileIconId());
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING, summoner.getName().toLowerCase());
+
+                //Insert data into database
+                Uri insertedUri = mContext.getContentResolver().insert(
+                        SummonerContract.SummonerEntry.CONTENT_URI,
+                        summonerValues
+                );
 
 
-            Log.i(LOG_TAG, "Summoner:"  + summoner +" added to database");
+                Log.i(LOG_TAG, "Summoner:" + summoner + " added to database");
 
-            summonerId = ContentUris.parseId(insertedUri);
+                summonerId = ContentUris.parseId(insertedUri);
+            }
+            catch (RiotApiException e){
+                e.printStackTrace();
+            }
         }
 
         summonerCursor.close();
@@ -86,7 +94,7 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
 
    @Override
     protected Void doInBackground(String[]... params){
-       if(params[0].length == 0){
+       if(params[0] == null || params[0].length == 0){
            return null;
        }
 
@@ -94,7 +102,7 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
 
 
 
-       RiotApi api = new RiotApi("ef351397-bb4e-4983-979b-b0a23a4d34d8");
+       api = new RiotApi("ef351397-bb4e-4983-979b-b0a23a4d34d8");
        api.setRegion(Region.NA);
 
 
@@ -110,12 +118,23 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
 
            try {
 
-               summoner = api.getSummonerByName(params[0][i]);
-               summonerRow = addSummoner(summoner);
+
+               summonerRow = addSummoner(params[0][i]);
 
 
+               //Retrieving RiotID to make next API call
+               Cursor summonerCursor = mContext.getContentResolver().query(
+                       SummonerContract.SummonerEntry.CONTENT_URI,
+                       new String[] {SummonerContract.SummonerEntry.COLUMN_RIOT_ID},
+                       SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING + " = ?",
+                       new String[]{params[0][i]},
+                       null
+               );
 
-               List<PlayerStatsSummary> statsList = api.getPlayerStatsSummary(summoner.getId())
+               summonerCursor.moveToFirst();
+
+               List<PlayerStatsSummary> statsList =
+                       api.getPlayerStatsSummary(summonerCursor.getLong(0))
                        .getPlayerStatSummaries();
 
 
