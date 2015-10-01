@@ -1,4 +1,4 @@
-package com.example.evan.leagueleaderboard;
+package evan.leagueleaderboard;
 
 import android.content.Context;
 import android.content.SharedPreferences;

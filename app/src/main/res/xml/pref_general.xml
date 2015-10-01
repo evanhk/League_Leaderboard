@@ -4,7 +4,7 @@
 
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->
     <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
-    <com.example.evan.leagueleaderboard.AddSummonerPref
+    <evan.leagueleaderboard.AddSummonerPref
         android:key="Add_Summoner_Pref"
         android:title="Add Summoners"
         android:defaultValue="Summoner"
@@ -24,6 +24,12 @@
         android:entryValues="@array/queue_type_array"
         android:defaultValue="unranked"/>
 
+    <ListPreference
+        android:key="Refresh_Rate_Pref"
+        android:title="Refresh Rate"
+        android:entries="@array/refreh_rate_array"
+        android:entryValues="@array/refresh_rate_values"
+        android:defaultValue="1800000"/>
 
 
 

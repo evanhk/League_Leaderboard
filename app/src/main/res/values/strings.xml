@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">League Leaderboard</string>
+    <string name="add_summoner_set">Add_Summoners_Set</string>
+
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -8,5 +10,17 @@
         <item>unranked</item>
         <item>ranked</item>
         <item>ARAM</item>
+    </string-array>
+
+    <string-array name="refreh_rate_array">
+        <item>10 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+    </string-array>
+
+    <string-array name="refresh_rate_values">
+        <item>600000</item>
+        <item>1800000</item>
+        <item>3600000</item>
     </string-array>
 </resources>

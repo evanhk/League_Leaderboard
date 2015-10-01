@@ -1,4 +1,4 @@
-package com.example.evan.leagueleaderboard.data;
+package evan.leagueleaderboard.data;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -10,8 +10,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
-
-import dto.Summoner.Summoner;
 
 /**
  * Created by Evan on 9/1/2015.

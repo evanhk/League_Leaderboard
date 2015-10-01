@@ -1,9 +1,10 @@
-package com.example.evan.leagueleaderboard;
+package evan.leagueleaderboard;
 
 import android.content.ContentResolver;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.DatabaseUtils;
+import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
@@ -13,7 +14,6 @@ import android.support.v4.content.CursorLoader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.view.MenuItemCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,20 +24,19 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.evan.leagueleaderboard.data.SummonerContract;
-
-import org.w3c.dom.Text;
+import evan.leagueleaderboard.data.SummonerContract;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import dto.Summoner.Summoner;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Evan on 9/2/2015.
  */
 public class StatsFragment extends Fragment implements View.OnClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+
     public StatsFragment(){}
     private static final int SUMMONER_LOADER = 0;
 
@@ -91,6 +90,19 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        pref.registerOnSharedPreferenceChangeListener(mPrefsListener);
+
+
+        updateDb();
+
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        pref.unregisterOnSharedPreferenceChangeListener(mPrefsListener);
     }
 
     @Override
@@ -107,6 +119,10 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
         }
         if (id == R.id.clearDB){
             clearDB();
+            return true;
+        }
+        if (id == R.id.action_settings) {
+            startActivity(new Intent(getActivity(), SettingsActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -152,7 +168,7 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
     }
 
     public void updateDb(){
-        FetchSummonerTask summonerTask = new FetchSummonerTask(getActivity());
+
         // Pretty inefficient, will improve later
         pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         Set<String> s = pref.getStringSet("Add_Summoners_Set", new HashSet<String>());
@@ -183,12 +199,13 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
 
         //Saving correct ADD_SUMMONERS_PREF and clearing REMOVE SUMMOENRS
         SharedPreferences.Editor editor = pref.edit();
-        editor.putStringSet("Add_Summoners_set", s);
+        editor.putStringSet("Add_Summoners_Set", s);
         editor.putStringSet("Remove_Summoner", new HashSet<String>());
         editor.apply();
 
         String[] summoners = s.toArray(new String[]{});
-        summonerTask.execute(summoners);
+        summonerList = summoners;
+        callAsynchronousTask(summoners);
     }
 
     public void clearDB(){
@@ -206,9 +223,43 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
     @Override
     public void onResume(){
         super.onResume();
-        updateDb();
+
+        // UGLY way to listen for change in ADD_SUMMONERS_SET
+        pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        Set<String> s = pref.getStringSet("Add_Summoners_Set", new HashSet<String>());
+        String[] prefSet = s.toArray(new String[]{});
+        if(summonerList != prefSet ){
+            updateDb();
+        }
     }
 
+    public void callAsynchronousTask(final String[] summoners) {
+        final Handler handler = new Handler();
+        Timer timer = new Timer();
+        TimerTask doAsynchronousTask = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    public void run() {
+                        try {
+                            FetchSummonerTask performBackgroundTask = new FetchSummonerTask(getActivity());
+                            // PerformBackgroundTask this class is the class that extends AsynchTask
+                            performBackgroundTask.execute(summoners);
+                            Log.i("STATS_FRAMGENT_TASK", "Fetch summoner task called");
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                        }
+                    }
+                });
+            }
+        };
+
+        //Getting refresh preference
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        Integer refreshRate = Integer.valueOf(pref.getString("Refresh_Rate_Pref", "1800000"));
+
+        timer.schedule(doAsynchronousTask, 0, refreshRate); //execute in every 10/30/60 minutes
+    }
 
 
     public void onClick(View v){
@@ -218,6 +269,25 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
         getLoaderManager().restartLoader(SUMMONER_LOADER,order,this);
     }
 
+
+
+    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefsListener=
+            new SharedPreferences.OnSharedPreferenceChangeListener() {
+                @Override
+                public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                    if (key.equals("Add_Summoners_Set")) {
+                        updateDb();
+                        Log.d("LISTENER_TAG", "Add_Summoners_Set recognized and updateDb() called");
+                    } else if (key.equals("Remove_Summoner")) {
+                        updateDb();
+                    } else if (key.equals("Queue_Type")) {
+                        mSummonerAdapter.notifyDataSetChanged();
+                    }
+                    else{
+
+                    }
+                }
+            };
 
     ///////////    LOADER METHODS  //////////////////////////////////
     @Override

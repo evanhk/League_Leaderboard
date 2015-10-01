@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.evan.leagueleaderboard" >
+    package="evan.leagueleaderboard" >
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -21,8 +21,8 @@
         </activity>
 
         <provider
-            android:name=".data.SummonerProvider"
-            android:authorities="com.example.evan.leagueleaderboard"
+            android:name="evan.leagueleaderboard.data.SummonerProvider"
+            android:authorities="evan.leagueleaderboard"
             android:enabled="true"
             android:exported="true" />
 
@@ -32,7 +32,7 @@
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.evan.leagueleaderboard.MainActivity" />
+                android:value="evan.leagueleaderboard.MainActivity" />
         </activity>
     </application>
 

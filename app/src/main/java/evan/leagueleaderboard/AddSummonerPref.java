@@ -1,13 +1,13 @@
-package com.example.evan.leagueleaderboard;
+package evan.leagueleaderboard;
 
+import android.app.FragmentManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.DialogPreference;
 import android.preference.EditTextPreference;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.util.AttributeSet;
-import android.widget.EditText;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,8 +16,11 @@ import java.util.Set;
  * Created by Evan on 9/14/2015.
  */
 public class AddSummonerPref extends EditTextPreference {
+    private final Context mcontext;
+
     public AddSummonerPref(Context context, AttributeSet attr){
         super(context, attr);
+        mcontext = context;
     }
 
     private Set<String> mSummonerSet;
@@ -34,6 +37,12 @@ public class AddSummonerPref extends EditTextPreference {
 
             editor.putStringSet("Add_Summoners_Set", values);
             editor.apply();
+
+
+            //manually notifying listener of change
+
+
+
         }
     }
 

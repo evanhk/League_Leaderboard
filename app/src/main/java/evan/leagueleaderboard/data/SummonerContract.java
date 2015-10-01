@@ -1,4 +1,4 @@
-package com.example.evan.leagueleaderboard.data;
+package evan.leagueleaderboard.data;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
  * Created by Evan on 8/28/2015.
  */
 public class SummonerContract {
-    public static final String CONTENT_AUTHORITY = "com.example.evan.leagueleaderboard";
+    public static final String CONTENT_AUTHORITY = "evan.leagueleaderboard";
 
     //Base URI which used to contact the content provider
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);

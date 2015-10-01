@@ -1,4 +1,4 @@
-package com.example.evan.leagueleaderboard.data;
+package evan.leagueleaderboard.data;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -6,8 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.example.evan.leagueleaderboard.data.SummonerContract.SummonerEntry;
-import com.example.evan.leagueleaderboard.data.SummonerContract.StatsEntry;
+import evan.leagueleaderboard.data.SummonerContract.SummonerEntry;
+import evan.leagueleaderboard.data.SummonerContract.StatsEntry;
 /**
  * Created by Evan on 8/28/2015.
  */

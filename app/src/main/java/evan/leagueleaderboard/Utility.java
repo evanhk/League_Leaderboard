@@ -1,10 +1,10 @@
-package com.example.evan.leagueleaderboard;
+package evan.leagueleaderboard;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.example.evan.leagueleaderboard.data.SummonerContract;
+import evan.leagueleaderboard.data.SummonerContract;
 
 /**
  * Created by Evan on 9/24/2015.

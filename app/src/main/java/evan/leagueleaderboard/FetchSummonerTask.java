@@ -1,37 +1,36 @@
-package com.example.evan.leagueleaderboard;
+package evan.leagueleaderboard;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import dto.Stats.AggregatedStats;
 import dto.Stats.PlayerStatsSummary;
-import dto.Stats.PlayerStatsSummaryList;
 import dto.Summoner.Summoner;
 import constant.Region;
 import main.java.riotapi.RiotApi;
 import main.java.riotapi.RiotApiException;
 
-import com.example.evan.leagueleaderboard.data.SummonerDbHelper;
-import com.google.gson.*;
+import evan.leagueleaderboard.data.SummonerDbHelper;
 
-import com.example.evan.leagueleaderboard.data.SummonerContract;
+import evan.leagueleaderboard.data.SummonerContract;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 /**
  * Created by Evan on 8/30/2015.
  */
-public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
+public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
 
     private final String LOG_TAG = FetchSummonerTask.class.getSimpleName();
 
@@ -39,6 +38,7 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
     private SummonerDbHelper mOpenHelper;
     private boolean recordExists = false;
     private RiotApi api;
+    private Set<String> incorrectSummoners;
 
     public FetchSummonerTask (Context context){mContext = context;}
 
@@ -93,11 +93,12 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
     }
 
    @Override
-    protected Void doInBackground(String[]... params){
+    protected Set<String> doInBackground(String[]... params){
        if(params[0] == null || params[0].length == 0){
            return null;
        }
 
+       incorrectSummoners = new HashSet<>();
        mOpenHelper = new SummonerDbHelper(mContext);
 
 
@@ -120,7 +121,10 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
 
 
                summonerRow = addSummoner(params[0][i]);
-
+               if(summonerRow == -1){
+                   incorrectSummoners.add(params[0][i]);
+                   continue;
+               }
 
                //Retrieving RiotID to make next API call
                Cursor summonerCursor = mContext.getContentResolver().query(
@@ -200,9 +204,31 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Void> {
                    mOpenHelper.getTableAsString(mOpenHelper.getReadableDatabase(),
                            SummonerContract.SummonerEntry.TABLE_NAME));
        }
-    return null;
+    return incorrectSummoners;
    }
 
+
+    //Displays Toast for invalid summoner names and removes them from preference
+    @Override
+    public void onPostExecute(Set<String> invalidSummoners){
+        if(invalidSummoners != null) {
+            Iterator<String> it = invalidSummoners.iterator();
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(mContext);
+            Set<String> s = pref.getStringSet("Add_Summoners_Set", new HashSet<String>());
+
+            for (; it.hasNext(); ) {
+                String name = it.next();
+                Toast toast = Toast.makeText(mContext, "Invalid Summoner Name: " +
+                        name, Toast.LENGTH_LONG);
+                toast.show();
+                s.remove(name);
+            }
+
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putStringSet("Add_Summoners_Set", s);
+            editor.apply();
+        }
+    }
 
 
 }
