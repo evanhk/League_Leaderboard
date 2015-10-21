@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import java.util.Iterator;
+
 import evan.leagueleaderboard.data.SummonerContract;
 
 /**
@@ -90,5 +92,16 @@ public class Utility {
                 return SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME + " DESC";
         }
 
+    }
+
+    public static String formatSummonersToString(String[] summoners){
+        String returnString = "";
+        int i = 0;
+        for (; i < summoners.length -1; ++i){
+            returnString = returnString + summoners[i] + ",";
+        }
+        returnString = returnString + summoners [i];
+
+        return returnString;
     }
 }

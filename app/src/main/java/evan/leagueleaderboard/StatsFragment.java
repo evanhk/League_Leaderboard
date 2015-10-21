@@ -50,11 +50,22 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
             SummonerContract.StatsEntry.COLUMN_UNR_NEUTRAL,
             SummonerContract.StatsEntry.COLUMN_UNR_TURRETS,
             SummonerContract.StatsEntry.COLUMN_RANK_WINS,
+            SummonerContract.StatsEntry.COLUMN_RANK_LOSSES,
             SummonerContract.StatsEntry.COLUMN_RANK_KILLS,
             SummonerContract.StatsEntry.COLUMN_RANK_ASSISTS,
             SummonerContract.StatsEntry.COLUMN_RANK_MINIONS,
             SummonerContract.StatsEntry.COLUMN_RANK_NEUTRAL,
             SummonerContract.StatsEntry.COLUMN_RANK_TURRETS,
+            SummonerContract.StatsEntry.COLUMN_UNR_KILLS_AVG,
+            SummonerContract.StatsEntry.COLUMN_UNR_ASSISTS_AVG,
+            SummonerContract.StatsEntry.COLUMN_UNR_MINIONS_AVG,
+            SummonerContract.StatsEntry.COLUMN_UNR_NEUTRAL_AVG,
+            SummonerContract.StatsEntry.COLUMN_UNR_TURRETS_AVG,
+            SummonerContract.StatsEntry.COLUMN_RANK_KILLS_AVG,
+            SummonerContract.StatsEntry.COLUMN_RANK_ASSISTS_AVG,
+            SummonerContract.StatsEntry.COLUMN_RANK_MINIONS_AVG,
+            SummonerContract.StatsEntry.COLUMN_RANK_NEUTRAL_AVG,
+            SummonerContract.StatsEntry.COLUMN_RANK_TURRETS_AVG,
             SummonerContract.SummonerEntry.TABLE_NAME + "." + SummonerContract.SummonerEntry._ID,
             SummonerContract.SummonerEntry.COLUMN_RIOT_ID,
             SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME,
@@ -70,17 +81,28 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
     static final int COL_UNR_MINIONS = 5;
     static final int COL_UNR_NEUTRAL = 6;
     static final int COL_UNR_TURRETS = 7;
-    static final int COL_RANK_WINS = 8;
-    static final int COL_RANK_KILLS = 9;
-    static final int COL_RANK_ASSISTS = 10;
-    static final int COL_RANK_MINIONS = 11;
-    static final int COL_RANK_NEUTRAL = 12;
-    static final int COL_RANK_TURRETS = 13;
-    static final int COL_SUM_ID = 14;
-    static final int COL_RIOT_ID = 15;
-    static final int COL_SUMMONER_NAME = 16;
-    static final int COL_SUMMONER_LEVEL = 17;
-    static final int COL_PROFILE_ICON = 18;
+    static final int COL_UNR_KILLS_AVG = 8;
+    static final int COL_UNR_ASSISTS_AVG = 9;
+    static final int COL_UNR_MINIONS_AVG = 10;
+    static final int COL_UNR_NEUTRAL_AVG = 11;
+    static final int COL_UNR_TURRETS_AVG = 12;
+    static final int COL_RANK_WINS = 13;
+    static final int COL_RANK_LOSSES = 14;
+    static final int COL_RANK_KILLS = 15;
+    static final int COL_RANK_ASSISTS = 16;
+    static final int COL_RANK_MINIONS = 17;
+    static final int COL_RANK_NEUTRAL = 18;
+    static final int COL_RANK_TURRETS = 19;
+    static final int COL_RANK_KILLS_AVG = 20;
+    static final int COL_RANK_ASSISTS_AVG = 21;
+    static final int COL_RANK_MINIONS_AVG = 22;
+    static final int COL_RANK_NEUTRAL_AVG = 23;
+    static final int COL_RANK_TURRETS_AVG = 24;
+    static final int COL_SUM_ID = 25;
+    static final int COL_RIOT_ID = 26;
+    static final int COL_SUMMONER_NAME = 27;
+    static final int COL_SUMMONER_LEVEL = 28;
+    static final int COL_PROFILE_ICON = 29;
 
     private SummonerAdapter mSummonerAdapter;
     private String[] summonerList;
@@ -124,6 +146,17 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
         if (id == R.id.action_settings) {
             startActivity(new Intent(getActivity(), SettingsActivity.class));
             return true;
+        }
+        if (id == R.id.per_game_average){
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            Boolean current = pref.getBoolean("game_averages", false);
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putBoolean("game_averages", !current);
+            editor.apply();
+
+            Bundle b = new Bundle();
+            b.putInt("sortOrder", R.id.kills_header);
+            getLoaderManager().restartLoader(SUMMONER_LOADER,b,this);
         }
         return super.onOptionsItemSelected(item);
     }

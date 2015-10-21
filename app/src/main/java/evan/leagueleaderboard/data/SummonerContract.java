@@ -62,17 +62,28 @@ public class SummonerContract {
 
         public static final String COLUMN_UNR_WINS = "unranked_wins";
         public static final String COLUMN_UNR_NEUTRAL = "unranked_neutral_minions";
+        public static final String COLUMN_UNR_NEUTRAL_AVG = "unranked_neutral_minions_average";
         public static final String COLUMN_UNR_MINIONS = "unranked_minions_killed";
+        public static final String COLUMN_UNR_MINIONS_AVG = "unranked_minions_killed_average";
         public static final String COLUMN_UNR_KILLS = "unranked_champion_kills";
+        public static final String COLUMN_UNR_KILLS_AVG = "unranked_champion_kills_average";
         public static final String COLUMN_UNR_ASSISTS = "unranked_assists";
+        public static final String COLUMN_UNR_ASSISTS_AVG = "unranked_assists_average";
         public static final String COLUMN_UNR_TURRETS = "unranked_turrets_killed";
+        public static final String COLUMN_UNR_TURRETS_AVG = "unranked_turrets_killed_average";
 
         public static final String COLUMN_RANK_WINS = "ranked_wins"   ;
+        public static final String COLUMN_RANK_LOSSES = "ranked_losses";
         public static final String COLUMN_RANK_NEUTRAL = "ranked_neutral_minions";
+        public static final String COLUMN_RANK_NEUTRAL_AVG = "ranked_neutral_minions_average";
         public static final String COLUMN_RANK_MINIONS = "ranked_minions_killed";
+        public static final String COLUMN_RANK_MINIONS_AVG = "ranked_minions_killed_average";
         public static final String COLUMN_RANK_KILLS =   "ranked_champion_kills";
+        public static final String COLUMN_RANK_KILLS_AVG = "ranked_champion_kills_average";
         public static final String COLUMN_RANK_ASSISTS = "ranked_assists";
+        public static final String COLUMN_RANK_ASSISTS_AVG = "ranked_assists_average";
         public static final String COLUMN_RANK_TURRETS = "ranked_turrets_killed";
+        public static final String COLUMN_RANK_TURRETS_AVG = "ranked_turrets_killed_average";
 
         public static Uri buildStatsUri(long id){
             return ContentUris.withAppendedId(CONTENT_URI, id);

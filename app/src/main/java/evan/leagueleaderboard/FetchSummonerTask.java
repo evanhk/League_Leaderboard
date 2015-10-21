@@ -22,9 +22,11 @@ import evan.leagueleaderboard.data.SummonerDbHelper;
 
 import evan.leagueleaderboard.data.SummonerContract;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,60 +38,85 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
 
     private final Context mContext;
     private SummonerDbHelper mOpenHelper;
-    private boolean recordExists = false;
+    private Set<String> recordExists;
     private RiotApi api;
     private Set<String> incorrectSummoners;
 
     public FetchSummonerTask (Context context){mContext = context;}
 
-    long addSummoner(String summonerName){
+    void addSummoner(String[] summonerNames){
         long summonerId = -1;
+        String summonersToFetch = "";
 
-       // Checking if Summoner is already in database
-        Cursor summonerCursor = mContext.getContentResolver().query(
-                SummonerContract.SummonerEntry.CONTENT_URI,
-                new String[] {SummonerContract.SummonerEntry._ID},
-                SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING + " = ?",
-                new String[]{summonerName},
-                null
-        );
+        for(int i = 0; i < summonerNames.length ; ++i) {
+            // Checking if Summoner is already in database
+            Cursor summonerCursor = mContext.getContentResolver().query(
+                    SummonerContract.SummonerEntry.CONTENT_URI,
+                    new String[]{SummonerContract.SummonerEntry._ID},
+                    SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING + " = ?",
+                    new String[]{summonerNames[i]},
+                    null
+            );
 
-        if(summonerCursor.moveToFirst()){
-            int summonerIdIndex = summonerCursor.getColumnIndex(SummonerContract.SummonerEntry._ID);
-            summonerId = summonerCursor.getLong(summonerIdIndex);
-            recordExists = true;
-            Log.i(LOG_TAG, "Summoner" + summonerName + " already in database ");
-        } else{
-            try {
-
-                //Creating values to insert to database
-                ContentValues summonerValues = new ContentValues();
-                Summoner summoner = api.getSummonerByName(summonerName);
-
-                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME, summoner.getName());
-                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_LEVEL, summoner.getSummonerLevel());
-                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_RIOT_ID, summoner.getId());
-                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_PROFILE_ICON, summoner.getProfileIconId());
-                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING, summoner.getName().toLowerCase());
-
-                //Insert data into database
-                Uri insertedUri = mContext.getContentResolver().insert(
-                        SummonerContract.SummonerEntry.CONTENT_URI,
-                        summonerValues
-                );
-
-
-                Log.i(LOG_TAG, "Summoner:" + summoner + " added to database");
-
-                summonerId = ContentUris.parseId(insertedUri);
+            if (summonerCursor.moveToFirst()) {
+                int summonerIdIndex = summonerCursor.getColumnIndex(SummonerContract.SummonerEntry._ID);
+                summonerId = summonerCursor.getLong(summonerIdIndex);
+                recordExists.add(summonerNames[i]);
+                Log.i(LOG_TAG, "Summoner" + summonerNames[i] + " already in database ");
             }
-            catch (RiotApiException e){
-                e.printStackTrace();
+            else{
+                summonersToFetch = summonersToFetch + summonerNames[i] + ",";
             }
+
+            summonerCursor.close();
         }
 
-        summonerCursor.close();
-        return summonerId;
+        //Getting Set of Summoner Objects not in DB
+        Map summonerMap = new HashMap();
+        try {
+            summonerMap = api.getSummonersByName(summonersToFetch);
+        }
+        catch (RiotApiException e){
+            e.printStackTrace();
+        }
+
+        Set<Map.Entry<String,Summoner>> summonerSet = summonerMap.entrySet();
+        Iterator<Map.Entry<String,Summoner>> i = summonerSet.iterator();
+
+        //Inserting new Summoner Objects into DB
+        for(;i.hasNext();){
+
+            Summoner toAdd = i.next().getValue();
+
+            //Creating values to insert to database
+            ContentValues summonerValues = new ContentValues();
+
+
+            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME, toAdd.getName());
+            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_LEVEL, toAdd.getSummonerLevel());
+            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_RIOT_ID, toAdd.getId());
+            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_PROFILE_ICON, toAdd.getProfileIconId());
+            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING, toAdd.getName().toLowerCase());
+
+            //Insert data into database
+            Uri insertedUri = mContext.getContentResolver().insert(
+                    SummonerContract.SummonerEntry.CONTENT_URI,
+                    summonerValues
+            );
+
+
+            Log.i(LOG_TAG, "Summoner:" + toAdd.getName() + " added to database");
+
+            summonerId = ContentUris.parseId(insertedUri);
+
+
+            // TODO handle incorrect summoner in batch call
+            if(summonerId == -1){
+                //incorrectSummoners.add(i);
+            }
+
+        }
+
     }
 
    @Override
@@ -100,12 +127,15 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
 
        incorrectSummoners = new HashSet<>();
        mOpenHelper = new SummonerDbHelper(mContext);
+       recordExists = new HashSet<>();
 
 
 
        api = new RiotApi("ef351397-bb4e-4983-979b-b0a23a4d34d8");
        api.setRegion(Region.NA);
 
+       //    ADDING SUMMONERS TO DB
+       addSummoner(params[0]);
 
        for(int i = 0; i < params[0].length; ++i) {
            Summoner summoner;
@@ -117,84 +147,118 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
            PlayerStatsSummary rankedSummary =  null;
            AggregatedStats rankedStats;
 
-           try {
-
-
-               summonerRow = addSummoner(params[0][i]);
-               if(summonerRow == -1){
-                   incorrectSummoners.add(params[0][i]);
-                   continue;
-               }
-
                //Retrieving RiotID to make next API call
                Cursor summonerCursor = mContext.getContentResolver().query(
                        SummonerContract.SummonerEntry.CONTENT_URI,
-                       new String[] {SummonerContract.SummonerEntry.COLUMN_RIOT_ID},
+                       new String[]{SummonerContract.SummonerEntry._ID,
+                               SummonerContract.SummonerEntry.COLUMN_RIOT_ID},
                        SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING + " = ?",
                        new String[]{params[0][i]},
                        null
                );
 
-               summonerCursor.moveToFirst();
+               if (summonerCursor.moveToFirst()) {
+                   try {
+                       List<PlayerStatsSummary> statsList =
+                               api.getPlayerStatsSummary(summonerCursor.getLong(1))
+                                       .getPlayerStatSummaries();
 
-               List<PlayerStatsSummary> statsList =
-                       api.getPlayerStatsSummary(summonerCursor.getLong(0))
-                       .getPlayerStatSummaries();
+                       if(statsList == null){
+                           incorrectSummoners.add(params[0][i]);
+                           continue;
+                       }
+
+                       for (int j = 0; j < statsList.size(); ++j) {
+                           if (statsList.get(j).getPlayerStatSummaryType().equals("Unranked")) {
+                               unrankedSummary = statsList.get(j);
+                           }
+                           if (statsList.get(j).getPlayerStatSummaryType().equals("RankedSolo5x5")) {
+                               rankedSummary = statsList.get(j);
+                           }
+
+                       }
+                       if (unrankedSummary == null ) {
+                           throw new RiotApiException(123);
+                       }
 
 
-               for(int j = 0; j < statsList.size(); ++ j) {
-                   if(statsList.get(j).getPlayerStatSummaryType().equals("Unranked"))
-                        {unrankedSummary = statsList.get(j);}
-                   if (statsList.get(j).getPlayerStatSummaryType().equals("RankedSolo5x5"))
-                        {rankedSummary = statsList.get(j);}
+                       unrankedStats = unrankedSummary.getAggregatedStats();
 
+                       //Inserting desired stats to ContentValues
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_SUM_KEY, summonerCursor.getLong(0));
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_WINS, unrankedSummary.getWins());
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_KILLS, unrankedStats.getTotalChampionKills());
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_ASSISTS, unrankedStats.getTotalAssists());
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_MINIONS, unrankedStats.getTotalMinionKills());
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_NEUTRAL, unrankedStats.getTotalNeutralMinionsKilled());
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_TURRETS, unrankedStats.getTotalTurretsKilled());
+
+                       //approximate averages for normals
+                       double aprxTotalGames = unrankedSummary.getWins() * 2;
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_KILLS_AVG, unrankedStats.getTotalChampionKills()/ aprxTotalGames);
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_ASSISTS_AVG, unrankedStats.getTotalAssists() / aprxTotalGames);
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_MINIONS_AVG, unrankedStats.getTotalMinionKills() / aprxTotalGames);
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_NEUTRAL_AVG, unrankedStats.getTotalNeutralMinionsKilled() / aprxTotalGames);
+                       statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_TURRETS_AVG, unrankedStats.getTotalTurretsKilled()/ aprxTotalGames);
+
+                       if(rankedSummary != null){
+                           rankedStats = rankedSummary.getAggregatedStats();
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_WINS, rankedSummary.getWins());
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_LOSSES, rankedSummary.getLosses());
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_KILLS, rankedStats.getTotalChampionKills());
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_ASSISTS, rankedStats.getTotalAssists());
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_MINIONS, rankedStats.getTotalMinionKills());
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_NEUTRAL, rankedStats.getTotalNeutralMinionsKilled());
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_TURRETS, rankedStats.getTotalTurretsKilled());
+
+                           //averages
+                           double totalGames = rankedSummary.getWins() + rankedSummary.getLosses();
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_KILLS_AVG, rankedStats.getTotalChampionKills()/ totalGames);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_ASSISTS_AVG, rankedStats.getTotalAssists() / totalGames);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_MINIONS_AVG, rankedStats.getTotalMinionKills() / totalGames);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_NEUTRAL_AVG, rankedStats.getTotalNeutralMinionsKilled() / totalGames);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_TURRETS_AVG, rankedStats.getTotalTurretsKilled()/ totalGames);
+                       }
+                       else{
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_WINS, 0);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_KILLS, 0);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_ASSISTS,0);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_MINIONS, 0);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_NEUTRAL, 0);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_TURRETS, 0);
+
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_KILLS_AVG, 0);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_ASSISTS_AVG,0);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_MINIONS_AVG, 0);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_NEUTRAL_AVG, 0);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_TURRETS_AVG, 0);
+                       }
+
+
+
+                       if (recordExists.contains(params[0][i])) {
+                           statsId = mContext.getContentResolver().update(
+                                   SummonerContract.StatsEntry.buildStatsUri(),
+                                   statsValues,
+                                   SummonerContract.StatsEntry.COLUMN_SUM_KEY + " = ?",
+                                   new String[]{String.valueOf(summonerCursor.getLong(0))});
+                       } else {
+                           mContext.getContentResolver().insert(
+                                   SummonerContract.StatsEntry.buildStatsUri(),
+                                   statsValues
+                           );
+                           Log.i(LOG_TAG, "stats sucesffuly updated");
+                       }
+
+                       if (statsId > 0) {
+                           Log.i(LOG_TAG, "stats successfully inserted");
+                       }
+
+                   }
+                   catch (RiotApiException e){
+                       e.printStackTrace();
+                   }
                }
-               if(unrankedSummary == null || rankedSummary == null){
-                   throw new RiotApiException(123);
-               }
-               unrankedStats = unrankedSummary.getAggregatedStats();
-               rankedStats = rankedSummary.getAggregatedStats();
-               //Inserting desired stats to ContentValues
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_SUM_KEY, summonerRow);
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_WINS, unrankedSummary.getWins());
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_KILLS, unrankedStats.getTotalChampionKills());
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_ASSISTS, unrankedStats.getTotalAssists());
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_MINIONS, unrankedStats.getTotalMinionKills());
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_NEUTRAL, unrankedStats.getTotalNeutralMinionsKilled());
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_TURRETS, unrankedStats.getTotalTurretsKilled());
-
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_WINS, rankedSummary.getWins());
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_KILLS, rankedStats.getTotalChampionKills());
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_ASSISTS, rankedStats.getTotalAssists());
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_MINIONS, rankedStats.getTotalMinionKills());
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_NEUTRAL, rankedStats.getTotalNeutralMinionsKilled());
-               statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_TURRETS, rankedStats.getTotalTurretsKilled());
-
-
-               if (recordExists){
-                   statsId = mContext.getContentResolver().update(
-                           SummonerContract.StatsEntry.buildStatsUri(),
-                           statsValues,
-                           SummonerContract.StatsEntry.COLUMN_SUM_KEY + " = ?",
-                           new String[]{String.valueOf(summonerRow)});
-                   recordExists = false;
-               }
-               else{
-                   mContext.getContentResolver().insert(
-                           SummonerContract.StatsEntry.buildStatsUri(),
-                           statsValues
-                   );
-                   Log.i(LOG_TAG, "stats sucesffuly updated");
-               }
-
-               if (statsId > 0) {
-                   Log.i(LOG_TAG, "stats successfully inserted");
-               }
-
-           } catch (RiotApiException e) {
-               Log.e(LOG_TAG, e.getMessage(), e);
-               e.printStackTrace();
-           }
 
 
            Log.d(LOG_TAG,

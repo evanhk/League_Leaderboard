@@ -13,7 +13,7 @@ import evan.leagueleaderboard.data.SummonerContract.StatsEntry;
  */
 public class SummonerDbHelper extends SQLiteOpenHelper{
     String TAG = "DbHelper";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 6;
 
     static final String DATABASE_NAME = "summoner.db";
 
@@ -43,13 +43,24 @@ public class SummonerDbHelper extends SQLiteOpenHelper{
                 StatsEntry.COLUMN_UNR_MINIONS + " INTEGER NOT NULL," +
                 StatsEntry.COLUMN_UNR_NEUTRAL + " INTEGER NOT NULL," +
                 StatsEntry.COLUMN_UNR_TURRETS + " INTEGER NOT NULL," +
+                StatsEntry.COLUMN_UNR_KILLS_AVG + " REAL NOT NULL," +
+                StatsEntry.COLUMN_UNR_ASSISTS_AVG + " REAL NOT NULL," +
+                StatsEntry.COLUMN_UNR_MINIONS_AVG + " REAL NOT NULL," +
+                StatsEntry.COLUMN_UNR_NEUTRAL_AVG + " REAL NOT NULL," +
+                StatsEntry.COLUMN_UNR_TURRETS_AVG + " REAL NOT NULL," +
 
                 StatsEntry.COLUMN_RANK_WINS + " INTEGER NOT NULL," +
+                StatsEntry.COLUMN_RANK_LOSSES + " INTEGER NOT NULL," +
                 StatsEntry.COLUMN_RANK_KILLS + " INTEGER NOT NULL," +
                 StatsEntry.COLUMN_RANK_ASSISTS + " INTEGER NOT NULL," +
                 StatsEntry.COLUMN_RANK_MINIONS + " INTEGER NOT NULL," +
                 StatsEntry.COLUMN_RANK_NEUTRAL + " INTEGER NOT NULL," +
                 StatsEntry.COLUMN_RANK_TURRETS + " INTEGER NOT NULL," +
+                StatsEntry.COLUMN_RANK_KILLS_AVG + " REAL NOT NULL," +
+                StatsEntry.COLUMN_RANK_ASSISTS_AVG + " REAL NOT NULL," +
+                StatsEntry.COLUMN_RANK_MINIONS_AVG + " REAL NOT NULL," +
+                StatsEntry.COLUMN_RANK_NEUTRAL_AVG + " REAL NOT NULL," +
+                StatsEntry.COLUMN_RANK_TURRETS_AVG + " REAL NOT NULL," +
 
                 " FOREIGN KEY (" + StatsEntry.COLUMN_SUM_KEY + ") REFERENCES " +
                 SummonerEntry.TABLE_NAME + " (" + SummonerEntry._ID +"), " +

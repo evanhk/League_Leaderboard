@@ -10,4 +10,9 @@
         />
     <item android:id="@+id/clearDB"
         android:title="action_clear"/>
+
+    <item android:id="@+id/per_game_average"
+        android:title="@string/game_averages"
+        app:showAsAction="ifRoom"/>
+
 </menu>
