@@ -155,20 +155,20 @@ public class SummonerAdapter extends CursorAdapter{
             ///// Per Game Averages ///////////////////////////
             else{
                 viewHolder.killsView.setText(
-                        String.valueOf(cursor.getDouble(StatsFragment.COL_RANK_KILLS_AVG))
+                        String.valueOf(df.format(cursor.getDouble(StatsFragment.COL_RANK_KILLS_AVG)))
                 );
                 viewHolder.assistsView.setText(
-                        String.valueOf(cursor.getDouble(StatsFragment.COL_RANK_ASSISTS_AVG))
+                        String.valueOf(df.format(cursor.getDouble(StatsFragment.COL_RANK_ASSISTS_AVG)))
                 );
                 if (landscape) {
                     viewHolder.minionsView.setText(
-                            String.valueOf(cursor.getDouble(StatsFragment.COL_RANK_MINIONS_AVG))
+                            String.valueOf(df.format(cursor.getDouble(StatsFragment.COL_RANK_MINIONS_AVG)))
                     );
                     viewHolder.neutralsView.setText(
-                            String.valueOf(cursor.getDouble(StatsFragment.COL_RANK_NEUTRAL_AVG))
+                            String.valueOf(df.format(cursor.getDouble(StatsFragment.COL_RANK_NEUTRAL_AVG)))
                     );
                     viewHolder.turretsView.setText(
-                            String.valueOf(cursor.getDouble(StatsFragment.COL_RANK_TURRETS_AVG))
+                            String.valueOf(df.format(cursor.getDouble(StatsFragment.COL_RANK_TURRETS_AVG)))
                     );
                 }
             }

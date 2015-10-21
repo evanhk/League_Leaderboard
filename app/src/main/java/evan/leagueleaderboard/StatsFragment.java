@@ -169,8 +169,9 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
         ListView listView = (ListView) rootView.findViewById(R.id.listview);
 
         listView.setAdapter(mSummonerAdapter);
-        //TODO add setOnItemClickListener
 
+
+        // SETTING LISTENERS FOR COLUMN HEADERS TO SORT
         TextView click = (TextView) rootView.findViewById(R.id.summoner_header);
         click.setOnClickListener(this);
         click = (TextView) rootView.findViewById(R.id.wins_header);

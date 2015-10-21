@@ -18,79 +18,93 @@ public class Utility {
 
         String queueType = pref.getString("Queue_Type", "unranked");
         Integer selectedStat = sort;
+        boolean average = pref.getBoolean("game_averages", false);
+        String order;
 
         switch (selectedStat){
             case R.id.summoner_header:
-                return SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING + " DESC";
+                return   SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING  + " ASC";
             case R.id.kills_header:
                 if(queueType.equals("unranked")){
-                    return SummonerContract.StatsEntry.COLUMN_UNR_KILLS + " DESC";
+                    order =  SummonerContract.StatsEntry.COLUMN_UNR_KILLS ;
                 }
                 else if (queueType.equals("ranked")){
-                    return SummonerContract.StatsEntry.COLUMN_RANK_KILLS + " DESC";
+                    order =  SummonerContract.StatsEntry.COLUMN_RANK_KILLS ;
                 }
                 else{
-                    return SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME + " ASC";
+                    order =  SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME ;
                 }
+                break;
             case R.id.assists_header:
                 if(queueType.equals("unranked")){
-                    return SummonerContract.StatsEntry.COLUMN_UNR_ASSISTS + " DESC";
+                    order =  SummonerContract.StatsEntry.COLUMN_UNR_ASSISTS ;
                 }
                 else if (queueType.equals("ranked")){
-                    return SummonerContract.StatsEntry.COLUMN_RANK_ASSISTS + " DESC";
+                    order =  SummonerContract.StatsEntry.COLUMN_RANK_ASSISTS ;
                 }
                 else{
-                    return SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME + " ASC";
+                    order =  SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME ;
                 }
-
+                break;
             case R.id.wins_header:
                 if(queueType.equals("unranked")){
-                    return SummonerContract.StatsEntry.COLUMN_UNR_WINS + " DESC";
+                    return   SummonerContract.StatsEntry.COLUMN_UNR_WINS + " DESC";
                 }
                 else if (queueType.equals("ranked")){
-                    return SummonerContract.StatsEntry.COLUMN_RANK_WINS + " DESC";
+                    return   SummonerContract.StatsEntry.COLUMN_RANK_WINS + " DESC";
                 }
                 else{
-                    return SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME + " ASC";
+                    order =  SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME ;
                 }
+                break;
 
 
             case R.id.cs_header:
                 if(queueType.equals("unranked")){
-                    return SummonerContract.StatsEntry.COLUMN_UNR_MINIONS + " DESC";
+                    order =  SummonerContract.StatsEntry.COLUMN_UNR_MINIONS ;
                 }
                 else if (queueType.equals("ranked")){
-                    return SummonerContract.StatsEntry.COLUMN_RANK_MINIONS + " DESC";
+                    order =  SummonerContract.StatsEntry.COLUMN_RANK_MINIONS ;
                 }
                 else{
-                    return SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME + " ASC";
+                    order =  SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME ;
                 }
+                break;
 
             case R.id.neutrals_header:
                 if(queueType.equals("unranked")){
-                    return SummonerContract.StatsEntry.COLUMN_UNR_NEUTRAL + " DESC";
+                    order =  SummonerContract.StatsEntry.COLUMN_UNR_NEUTRAL ;
                 }
                 else if (queueType.equals("ranked")){
-                    return SummonerContract.StatsEntry.COLUMN_RANK_NEUTRAL + " DESC";
+                    order =  SummonerContract.StatsEntry.COLUMN_RANK_NEUTRAL ;
                 }
                 else{
-                    return SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME + " ASC";
+                    order =  SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME ;
                 }
+                break;
 
             case R.id.turrets_header:
                 if(queueType.equals("unranked")){
-                    return SummonerContract.StatsEntry.COLUMN_UNR_TURRETS + " DESC";
+                    order =  SummonerContract.StatsEntry.COLUMN_UNR_TURRETS ;
                 }
                 else if (queueType.equals("ranked")){
-                    return SummonerContract.StatsEntry.COLUMN_RANK_TURRETS + " DESC";
+                    order =  SummonerContract.StatsEntry.COLUMN_RANK_TURRETS ;
                 }
                 else{
-                    return SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME + " ASC";
+                    order =  SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME ;
                 }
+                break;
 
             default:
-                return SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME + " DESC";
+                return   SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME  + " ASC";
         }
+
+        if(average){
+            order = order + "_average";
+        }
+        order = order + " DESC";
+
+        return order;
 
     }
 
