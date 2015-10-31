@@ -146,7 +146,7 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
 
 
 
-       api = new RiotApi("ef351397-bb4e-4983-979b-b0a23a4d34d8");
+       api = new RiotApi("ae96eef8-09be-427d-ac80-a2b961c5c4f7");
        api.setRegion(Region.NA);
 
        //    ADDING SUMMONERS TO DB
