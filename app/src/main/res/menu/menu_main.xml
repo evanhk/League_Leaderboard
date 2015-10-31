@@ -13,6 +13,10 @@
 
     <item android:id="@+id/per_game_average"
         android:title="@string/game_averages"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom"
+        android:checkable="true"
+        />
+
+
 
 </menu>

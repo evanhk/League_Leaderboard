@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import dto.Static.Stats;
 import dto.Stats.AggregatedStats;
 import dto.Stats.PlayerStatsSummary;
 import dto.Summoner.Summoner;
@@ -22,6 +23,8 @@ import evan.leagueleaderboard.data.SummonerDbHelper;
 
 import evan.leagueleaderboard.data.SummonerContract;
 
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,78 +44,87 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
     private Set<String> recordExists;
     private RiotApi api;
     private Set<String> incorrectSummoners;
+    private ArrayList<String> needStats;
 
     public FetchSummonerTask (Context context){mContext = context;}
 
-    void addSummoner(String[] summonerNames){
+
+    /**
+     * Retrieves summoner's info from Riot Server and stores it in database if it
+     * is not there already. It also checks if the stored stats need to be updated.
+     *
+     * @param summonerNames
+     * @throws RiotApiException
+     */
+    void addSummoner(String[] summonerNames) throws RiotApiException{
         long summonerId = -1;
         String summonersToFetch = "";
 
         for(int i = 0; i < summonerNames.length ; ++i) {
-            // Checking if Summoner is already in database
-            Cursor summonerCursor = mContext.getContentResolver().query(
-                    SummonerContract.SummonerEntry.CONTENT_URI,
-                    new String[]{SummonerContract.SummonerEntry._ID},
-                    SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING + " = ?",
-                    new String[]{summonerNames[i]},
-                    null
-            );
-
-            if (summonerCursor.moveToFirst()) {
-                int summonerIdIndex = summonerCursor.getColumnIndex(SummonerContract.SummonerEntry._ID);
-                summonerId = summonerCursor.getLong(summonerIdIndex);
-                recordExists.add(summonerNames[i]);
-                Log.i(LOG_TAG, "Summoner" + summonerNames[i] + " already in database ");
-            }
-            else{
-                summonersToFetch = summonersToFetch + summonerNames[i] + ",";
-            }
-
-            summonerCursor.close();
+            summonersToFetch = summonersToFetch + summonerNames[i] + ",";
         }
 
-        //Getting Set of Summoner Objects not in DB
+
         Map summonerMap = new HashMap();
-        try {
-            summonerMap = api.getSummonersByName(summonersToFetch);
+
+        summonerMap = api.getSummonersByName(summonersToFetch);
+        if(summonerMap == null){
+            throw new RiotApiException (1);
         }
-        catch (RiotApiException e){
-            e.printStackTrace();
-        }
+
 
         Set<Map.Entry<String,Summoner>> summonerSet = summonerMap.entrySet();
         Iterator<Map.Entry<String,Summoner>> i = summonerSet.iterator();
 
         //Inserting new Summoner Objects into DB
         for(;i.hasNext();){
-
             Summoner toAdd = i.next().getValue();
+
+            Cursor summonerCursor = mContext.getContentResolver().query(
+                    SummonerContract.SummonerEntry.CONTENT_URI,
+                    new String[]{SummonerContract.SummonerEntry.COLUMN_REVISION_DATE},
+                    SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME + " = ?",
+                    new String[]{toAdd.getName()},
+                    null
+            );
 
             //Creating values to insert to database
             ContentValues summonerValues = new ContentValues();
 
-
-            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME, toAdd.getName());
-            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_LEVEL, toAdd.getSummonerLevel());
-            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_RIOT_ID, toAdd.getId());
-            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_PROFILE_ICON, toAdd.getProfileIconId());
-            summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING, toAdd.getName().toLowerCase());
-
-            //Insert data into database
-            Uri insertedUri = mContext.getContentResolver().insert(
-                    SummonerContract.SummonerEntry.CONTENT_URI,
-                    summonerValues
-            );
+            //Checking to see if data has changed from whats cached
+            if(!summonerCursor.moveToFirst() ) {
 
 
-            Log.i(LOG_TAG, "Summoner:" + toAdd.getName() + " added to database");
-
-            summonerId = ContentUris.parseId(insertedUri);
 
 
-            // TODO handle incorrect summoner in batch call
-            if(summonerId == -1){
-                //incorrectSummoners.add(i);
+
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME, toAdd.getName());
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_LEVEL, toAdd.getSummonerLevel());
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_RIOT_ID, toAdd.getId());
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_PROFILE_ICON, toAdd.getProfileIconId());
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING, toAdd.getName().toLowerCase());
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_REVISION_DATE, toAdd.getRevisionDate());
+
+                //Insert data into database
+                Uri insertedUri = mContext.getContentResolver().insert(
+                        SummonerContract.SummonerEntry.CONTENT_URI,
+                        summonerValues
+                );
+
+
+                Log.i(LOG_TAG, "Summoner:" + toAdd.getName() + " added to database");
+
+                needStats.add(toAdd.getName());
+            }
+            else if( toAdd.getRevisionDate() != summonerCursor.getLong(0)){
+                needStats.add(toAdd.getName());
+
+                summonerValues.put(SummonerContract.SummonerEntry.COLUMN_REVISION_DATE, toAdd.getRevisionDate());
+                int updatedRows =mContext.getContentResolver().update(SummonerContract.SummonerEntry.CONTENT_URI,
+                                                        summonerValues,
+                        SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME + " = ?",
+                        new String[]{toAdd.getName()});
+
             }
 
         }
@@ -125,9 +137,12 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
            return null;
        }
 
+
+
        incorrectSummoners = new HashSet<>();
        mOpenHelper = new SummonerDbHelper(mContext);
        recordExists = new HashSet<>();
+       needStats = new ArrayList<>();
 
 
 
@@ -135,9 +150,14 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
        api.setRegion(Region.NA);
 
        //    ADDING SUMMONERS TO DB
-       addSummoner(params[0]);
-
-       for(int i = 0; i < params[0].length; ++i) {
+       try {
+           addSummoner(params[0]);
+       }catch (RiotApiException e ){
+           Log.w(LOG_TAG, "Riot Exception thrown from addSummoner");
+           return null;
+       }
+       Log.i(LOG_TAG, "Fetching stats for " + String.valueOf(needStats.size()) + " summoners");
+       for(int i = 0; i < needStats.size(); ++i) {
            Summoner summoner;
            Long summonerRow;
            ContentValues statsValues = new ContentValues();
@@ -152,8 +172,8 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
                        SummonerContract.SummonerEntry.CONTENT_URI,
                        new String[]{SummonerContract.SummonerEntry._ID,
                                SummonerContract.SummonerEntry.COLUMN_RIOT_ID},
-                       SummonerContract.SummonerEntry.COLUMN_SUMMONER_SETTING + " = ?",
-                       new String[]{params[0][i]},
+                       SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME  + " = ?",
+                       new String[]{needStats.get(i)},
                        null
                );
 
@@ -164,7 +184,7 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
                                        .getPlayerStatSummaries();
 
                        if(statsList == null){
-                           incorrectSummoners.add(params[0][i]);
+                           incorrectSummoners.add(needStats.get(i));
                            continue;
                        }
 
@@ -201,7 +221,7 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
                        statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_NEUTRAL_AVG, unrankedStats.getTotalNeutralMinionsKilled() / aprxTotalGames);
                        statsValues.put(SummonerContract.StatsEntry.COLUMN_UNR_TURRETS_AVG, unrankedStats.getTotalTurretsKilled()/ aprxTotalGames);
 
-                       if(rankedSummary != null){
+                       if(rankedSummary.getWins() + rankedSummary.getLosses() != 0){
                            rankedStats = rankedSummary.getAggregatedStats();
                            statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_WINS, rankedSummary.getWins());
                            statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_LOSSES, rankedSummary.getLosses());
@@ -221,6 +241,7 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
                        }
                        else{
                            statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_WINS, 0);
+                           statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_LOSSES, 0);
                            statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_KILLS, 0);
                            statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_ASSISTS,0);
                            statsValues.put(SummonerContract.StatsEntry.COLUMN_RANK_MINIONS, 0);
@@ -236,7 +257,7 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
 
 
 
-                       if (recordExists.contains(params[0][i])) {
+                       if (recordExists.contains(needStats.get(i))) {
                            statsId = mContext.getContentResolver().update(
                                    SummonerContract.StatsEntry.buildStatsUri(),
                                    statsValues,

@@ -1,43 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<com.daimajia.swipe.SwipeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:id= "@+id/swipe">
+    <!-- Bottom View Start -->
+    <LinearLayout
+        android:background="@color/delete_red"
+        android:id="@+id/swipe_bottom_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_gravity="right"
+        android:onClick="onClickRemoveSummoner"
+        >
 
-    <ImageView
-        android:id="@+id/unranked_icon_imageview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingRight="6dp"/>
-    <TextView
-        android:id="@+id/unranked_summoner_textview"
-        android:layout_width="130dp"
-        android:layout_height="match_parent"
-        android:textColor="@color/white"
-        />
-    <TextView
-        android:id="@+id/unranked_wins_textview"
-        android:layout_width="50dp"
-        android:layout_height="match_parent"
-        android:textColor="@color/white"
-        />
-    <TextView
-        android:id="@+id/unranked_kills_textview"
-        android:layout_width="50dp"
-        android:layout_height="match_parent"
-        android:textColor="@color/white"
-        />
-    <TextView
-        android:id="@+id/unranked_assists_textview"
-        android:layout_width="50dp"
-        android:layout_height="match_parent"
-        android:textColor="@color/white"
-        />
-    <TextView
-        android:id="@+id/unranked_minions_textview"
-        android:layout_width="50dp"
-        android:layout_height="match_parent"
-        android:textColor="@color/white"
-        />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:text="Remove Summoner?"/>
+
+    </LinearLayout>
 
 
-</LinearLayout>
+    <!-- Bottom View End -->
+
+
+
+    <!-- Surface View Start -->
+
+    <LinearLayout
+        android:orientation="horizontal" android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <ImageView
+            android:id="@+id/unranked_icon_imageview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="6dp"/>
+        <TextView
+            android:id="@+id/unranked_summoner_textview"
+            android:layout_width="130dp"
+            android:layout_height="match_parent"
+            android:textColor="@color/white"
+            />
+        <TextView
+            android:id="@+id/unranked_wins_textview"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:textColor="@color/white"
+            />
+        <TextView
+            android:id="@+id/unranked_kills_textview"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:textColor="@color/white"
+            />
+        <TextView
+            android:id="@+id/unranked_assists_textview"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:textColor="@color/white"
+            />
+        <TextView
+            android:id="@+id/unranked_minions_textview"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:textColor="@color/white"
+            />
+
+
+    </LinearLayout>
+</com.daimajia.swipe.SwipeLayout>

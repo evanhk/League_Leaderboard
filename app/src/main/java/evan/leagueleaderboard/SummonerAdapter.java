@@ -15,6 +15,9 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+
+import com.daimajia.swipe.SwipeLayout;
+import com.daimajia.swipe.adapters.CursorSwipeAdapter;
 import com.squareup.picasso.Picasso;
 
 import java.math.RoundingMode;
@@ -23,8 +26,10 @@ import java.text.DecimalFormat;
 /**
  * Created by Evan on 9/2/2015.
  */
-public class SummonerAdapter extends CursorAdapter{
+public class SummonerAdapter extends CursorSwipeAdapter{
     boolean landscape;
+
+
     public SummonerAdapter(Context context, Cursor c, int flags)
         {super(context,c,flags);
             Display display = ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
@@ -48,6 +53,9 @@ public class SummonerAdapter extends CursorAdapter{
         ViewHolder viewHolder = new ViewHolder(view);
         view.setTag(viewHolder);
 
+
+
+
         return view;
     }
 
@@ -66,6 +74,7 @@ public class SummonerAdapter extends CursorAdapter{
         DecimalFormat df = new DecimalFormat("###.##");
         df.setRoundingMode(RoundingMode.DOWN);
 
+        closeAllItems();
 
 
 
@@ -197,4 +206,17 @@ public class SummonerAdapter extends CursorAdapter{
             turretsView = (TextView) view.findViewById(R.id.unranked_towers_textview);
         }
     }
+
+
+    /// SWIPE SHENANIGANS
+
+    public int getSwipeLayoutResourceId(int i){
+        return R.id.swipe;
+    }
+    public void closeAllItems(){
+        closeAllExcept(null);
+    }
+
+
+
 }

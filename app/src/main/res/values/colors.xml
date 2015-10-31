@@ -3,4 +3,5 @@
     <color name="league_blue">#0F2B4C</color>
     <color name= "black_background">#000c17</color>
     <color name= "white">#ffffff</color>
+    <color name = "delete_red">#FF4747</color>
 </resources>

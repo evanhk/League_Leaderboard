@@ -1,6 +1,8 @@
 package evan.leagueleaderboard;
 
+import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.DatabaseUtils;
@@ -21,8 +23,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.daimajia.swipe.SwipeLayout;
 
 import evan.leagueleaderboard.data.SummonerContract;
 
@@ -116,6 +121,8 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
         pref.registerOnSharedPreferenceChangeListener(mPrefsListener);
 
 
+
+
         updateDb();
 
     }
@@ -157,6 +164,14 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
             Bundle b = new Bundle();
             b.putInt("sortOrder", R.id.kills_header);
             getLoaderManager().restartLoader(SUMMONER_LOADER,b,this);
+
+//            if(!current){
+//                item.setIcon(R.mipmap.ic_average_enabled);
+//            }
+//            else{
+//                item.setIcon(R.mipmap.ic_average_disabled);
+//            }
+
         }
         return super.onOptionsItemSelected(item);
     }
@@ -169,7 +184,54 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
         ListView listView = (ListView) rootView.findViewById(R.id.listview);
 
         listView.setAdapter(mSummonerAdapter);
+        View addButtonView = inflater.inflate(R.layout.add_summoner_button,null);
+        listView.addFooterView(addButtonView);
+        addButtonView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                LayoutInflater li = LayoutInflater.from(getActivity());
+                View promptsView = li.inflate(R.layout.addsummonerpref, null);
+
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+
+                alertDialogBuilder.setView(promptsView);
+
+                final EditText userInput = (EditText) promptsView.findViewById(R.id.add_summoner_prompt_editText);
+
+                alertDialogBuilder.setCancelable(false)
+                        .setPositiveButton("ADD", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if(userInput.getText() == null){
+                                    return;
+                                }
+                                SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                                SharedPreferences.Editor editor = pref.edit();
+                                Set<String> values =
+                                        pref.getStringSet("Add_Summoners_Set", new HashSet<String>());
+                                String toAdd = String.valueOf(userInput.getText()).toLowerCase();
+                                if(!values.contains(toAdd)) {
+                                    values.add(toAdd);
+                                }
+                                editor.putStringSet("Add_Summoners_Set", values);
+                                editor.apply();
+                                updateDb();
+                            }
+                        })
+                        .setNegativeButton("Cancel",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.cancel();
+                                    }
+                                });
+
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+            }
+
+        });
 
         // SETTING LISTENERS FOR COLUMN HEADERS TO SORT
         TextView click = (TextView) rootView.findViewById(R.id.summoner_header);
@@ -188,6 +250,11 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
             click = (TextView) rootView.findViewById(R.id.turrets_header);
             click.setOnClickListener(this);
         }
+
+
+
+
+
         return rootView;
     }
 
@@ -201,7 +268,12 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
         super.onActivityCreated(savedInstanceState);
     }
 
-    public void updateDb(){
+
+    public  void updateDb(){
+
+        if(mSummonerAdapter != null) {
+            mSummonerAdapter.closeAllItems();
+        }
 
         // Pretty inefficient, will improve later
         pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -240,6 +312,10 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
         String[] summoners = s.toArray(new String[]{});
         summonerList = summoners;
         callAsynchronousTask(summoners);
+
+        if(mSummonerAdapter != null) {
+            mSummonerAdapter.closeAllItems();
+        }
     }
 
     public void clearDB(){
@@ -266,6 +342,8 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
             updateDb();
         }
     }
+
+
 
     public void callAsynchronousTask(final String[] summoners) {
         final Handler handler = new Handler();
@@ -313,6 +391,7 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
                         updateDb();
                         Log.d("LISTENER_TAG", "Add_Summoners_Set recognized and updateDb() called");
                     } else if (key.equals("Remove_Summoner")) {
+                        Log.d("Preference Listener", "Remove_Summoner recognized and updatedDb() called");
                         updateDb();
                     } else if (key.equals("Queue_Type")) {
                         mSummonerAdapter.notifyDataSetChanged();
@@ -342,6 +421,9 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         mSummonerAdapter.swapCursor(cursor);
+        if(mSummonerAdapter != null) {
+            mSummonerAdapter.closeAllItems();
+        }
         Log.d("LOADER_TAG", DatabaseUtils.dumpCursorToString(cursor));
     }
 

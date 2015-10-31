@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:id="@+id/stats_fragment">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -11,8 +12,8 @@
             android:id="@+id/summoner_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingRight="80dp"
-            android:paddingLeft="30dp"
+            android:paddingRight="60dp"
+            android:paddingLeft="50dp"
             android:clickable="true"
             android:text="Summoner"
             android:textSize="14dp"
@@ -20,9 +21,10 @@
             android:textColor="@color/white"/>
         <TextView
             android:id="@+id/wins_header"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingRight="24dp"
+            android:layout_weight="1"
+            android:gravity="center"
             android:clickable="true"
             android:text="Wins"
             android:textSize="14dp"
@@ -30,9 +32,10 @@
             android:textColor="@color/white"/>
         <TextView
             android:id="@+id/kills_header"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingRight="24dp"
+            android:layout_weight="1"
+            android:gravity="center"
             android:clickable="true"
             android:text="Kills"
             android:textSize="14dp"
@@ -40,9 +43,10 @@
             android:textColor="@color/white"/>
         <TextView
             android:id="@+id/assists_header"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingRight="24dp"
+            android:layout_weight="1"
+            android:gravity="center"
             android:clickable="true"
             android:text="Assists"
             android:textSize="14dp"
@@ -50,9 +54,10 @@
             android:textColor="@color/white"/>
         <TextView
             android:id="@+id/cs_header"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingRight="24dp"
+            android:layout_weight="1"
+            android:gravity="center"
             android:clickable="true"
             android:text="CS"
             android:textSize="14dp"
@@ -60,9 +65,10 @@
             android:textColor="@color/white"/>
         <TextView
             android:id="@+id/neutrals_header"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingRight="24dp"
+            android:layout_weight="1"
+            android:gravity="center"
             android:clickable="true"
             android:text="Neutrals"
             android:textSize="14dp"
@@ -70,8 +76,10 @@
             android:textColor="@color/white"/>
         <TextView
             android:id="@+id/turrets_header"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
             android:clickable="true"
             android:text="Turrets"
             android:textSize="14dp"

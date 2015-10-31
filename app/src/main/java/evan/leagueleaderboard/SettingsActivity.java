@@ -97,9 +97,6 @@ public class SettingsActivity extends PreferenceActivity {
 
         // Add 'notifications' preferences, and a corresponding header.
         PreferenceCategory fakeHeader = new PreferenceCategory(this);
-        fakeHeader.setTitle(R.string.pref_header_notifications);
-        getPreferenceScreen().addPreference(fakeHeader);
-        addPreferencesFromResource(R.xml.pref_notification);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         Set<String> summonerList = prefs.getStringSet("Add_Summoners_Set", new HashSet<String>());

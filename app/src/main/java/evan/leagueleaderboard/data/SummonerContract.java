@@ -38,6 +38,7 @@ public class SummonerContract {
         public static final String COLUMN_RIOT_ID = "riot_id";
         public static final String COLUMN_SUMMONER_LEVEL = "summoner_level";
         public static final String COLUMN_PROFILE_ICON= "profile_icon";
+        public static final String COLUMN_REVISION_DATE = "revision_date";
 
 
         // id is the table id ' _ID'

@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "evan.leagueleaderboard"
-        minSdkVersion 14
+        minSdkVersion 19
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
@@ -29,4 +29,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'com.android.support:support-v4:22.1.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.android.support:recyclerview-v7:21.0.0'
+    compile "com.daimajia.swipelayout:library:1.2.0@aar"
 }

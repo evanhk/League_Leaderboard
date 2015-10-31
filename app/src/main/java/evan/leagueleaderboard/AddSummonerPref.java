@@ -32,7 +32,7 @@ public class AddSummonerPref extends EditTextPreference {
             SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
             SharedPreferences.Editor editor = pref.edit();
             Set<String> values =
-                    getSharedPreferences().getStringSet("Add_Summoners_Set", new HashSet<String>());
+                    pref.getStringSet("Add_Summoners_Set", new HashSet<String>());
             if(!values.contains(getText().toLowerCase())) {
                 values.add(getText().toLowerCase());
             }

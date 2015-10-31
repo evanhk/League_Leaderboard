@@ -13,7 +13,7 @@ import evan.leagueleaderboard.data.SummonerContract.StatsEntry;
  */
 public class SummonerDbHelper extends SQLiteOpenHelper{
     String TAG = "DbHelper";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 8;
 
     static final String DATABASE_NAME = "summoner.db";
 
@@ -31,7 +31,8 @@ public class SummonerDbHelper extends SQLiteOpenHelper{
                 SummonerEntry.COLUMN_SUMMONER_NAME + " TEXT NOT NULL," +
                 SummonerEntry.COLUMN_SUMMONER_LEVEL + " INTEGER NOT NULL," +
                 SummonerEntry.COLUMN_PROFILE_ICON + " INTEGER NOT NULL," +
-                SummonerEntry.COLUMN_SUMMONER_SETTING + " TEXT UNIQUE NOT NULL" +
+                SummonerEntry.COLUMN_SUMMONER_SETTING + " TEXT UNIQUE NOT NULL," +
+                SummonerEntry.COLUMN_REVISION_DATE + " LONG NOT NULL" +
                 " );";
 
         final String SQL_CREATE_STATS_TABLE = "CREATE TABLE " + StatsEntry.TABLE_NAME + " (" +
