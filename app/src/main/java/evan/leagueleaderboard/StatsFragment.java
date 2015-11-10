@@ -31,6 +31,7 @@ import com.daimajia.swipe.SwipeLayout;
 
 import evan.leagueleaderboard.data.SummonerContract;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -45,7 +46,7 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
     public StatsFragment(){}
     private static final int SUMMONER_LOADER = 0;
 
-    private static final String[] STATS_COLUMNS = {
+    public static final String[] STATS_COLUMNS = {
             SummonerContract.StatsEntry.TABLE_NAME + "." + SummonerContract.StatsEntry._ID,
             SummonerContract.StatsEntry.COLUMN_SUM_KEY,
             SummonerContract.StatsEntry.COLUMN_UNR_WINS,
@@ -120,6 +121,8 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         pref.registerOnSharedPreferenceChangeListener(mPrefsListener);
 
+        Intent update = new Intent(getActivity(),StatsService.class);
+        getActivity().startService(update);
 
 
 
@@ -165,12 +168,6 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
             b.putInt("sortOrder", R.id.kills_header);
             getLoaderManager().restartLoader(SUMMONER_LOADER,b,this);
 
-//            if(!current){
-//                item.setIcon(R.mipmap.ic_average_enabled);
-//            }
-//            else{
-//                item.setIcon(R.mipmap.ic_average_disabled);
-//            }
 
         }
         return super.onOptionsItemSelected(item);
@@ -253,7 +250,49 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
 
 
 
+        if(pref.getBoolean("firstRun",true)){
+            View promptsView = inflater.inflate(R.layout.first_run, null);
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
 
+            alertDialogBuilder.setView(promptsView);
+
+            final EditText userInput = (EditText) promptsView.findViewById(R.id.first_run_prompt_editText);
+
+            alertDialogBuilder.setCancelable(false)
+                    .setPositiveButton("ADD", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if(userInput.getText() == null){
+                                return;
+                            }
+                            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                            SharedPreferences.Editor editor = pref.edit();
+                            Set<String> values =
+                                    pref.getStringSet("Add_Summoners_Set", new HashSet<String>());
+                            String toAdd = String.valueOf(userInput.getText()).toLowerCase();
+                            if(!values.contains(toAdd)) {
+                                values.add(toAdd);
+                            }
+                            editor.putStringSet("Add_Summoners_Set", values);
+                            editor.putString("User",toAdd);
+                            editor.apply();
+                        }
+                    })
+                    .setNegativeButton("Cancel",
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+
+            pref.edit().putBoolean("firstRun",false);
+            pref.edit().apply();
+
+        }
 
         return rootView;
     }
@@ -267,6 +306,7 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
         getLoaderManager().initLoader(SUMMONER_LOADER, defaultSortOrder, this);
         super.onActivityCreated(savedInstanceState);
     }
+
 
 
     public  void updateDb(){
@@ -311,7 +351,12 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
 
         String[] summoners = s.toArray(new String[]{});
         summonerList = summoners;
-        callAsynchronousTask(summoners);
+
+        Intent update = new Intent(getActivity(), StatsService.class);
+        update.putExtra("evan.leagueleaderboard/.StatsService.summoners", summoners);
+        getActivity().startService(update);
+
+
 
         if(mSummonerAdapter != null) {
             mSummonerAdapter.closeAllItems();
@@ -345,33 +390,6 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
 
 
 
-    public void callAsynchronousTask(final String[] summoners) {
-        final Handler handler = new Handler();
-        Timer timer = new Timer();
-        TimerTask doAsynchronousTask = new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    public void run() {
-                        try {
-                            FetchSummonerTask performBackgroundTask = new FetchSummonerTask(getActivity());
-                            // PerformBackgroundTask this class is the class that extends AsynchTask
-                            performBackgroundTask.execute(summoners);
-                            Log.i("STATS_FRAMGENT_TASK", "Fetch summoner task called");
-                        } catch (Exception e) {
-                            // TODO Auto-generated catch block
-                        }
-                    }
-                });
-            }
-        };
-
-        //Getting refresh preference
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        Integer refreshRate = Integer.valueOf(pref.getString("Refresh_Rate_Pref", "1800000"));
-
-        timer.schedule(doAsynchronousTask, 0, refreshRate); //execute in every 10/30/60 minutes
-    }
 
 
     public void onClick(View v){
@@ -420,10 +438,12 @@ public class StatsFragment extends Fragment implements View.OnClickListener, Loa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        mSummonerAdapter.swapCursor(cursor);
         if(mSummonerAdapter != null) {
             mSummonerAdapter.closeAllItems();
         }
+
+        mSummonerAdapter.swapCursor(cursor);
+
         Log.d("LOADER_TAG", DatabaseUtils.dumpCursorToString(cursor));
     }
 

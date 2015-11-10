@@ -94,10 +94,6 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
             //Checking to see if data has changed from whats cached
             if(!summonerCursor.moveToFirst() ) {
 
-
-
-
-
                 summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_NAME, toAdd.getName());
                 summonerValues.put(SummonerContract.SummonerEntry.COLUMN_SUMMONER_LEVEL, toAdd.getSummonerLevel());
                 summonerValues.put(SummonerContract.SummonerEntry.COLUMN_RIOT_ID, toAdd.getId());
@@ -136,6 +132,9 @@ public class FetchSummonerTask extends AsyncTask<String[], Void, Set<String> > {
        if(params[0] == null || params[0].length == 0){
            return null;
        }
+
+
+
 
 
 

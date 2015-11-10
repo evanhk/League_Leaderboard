@@ -23,6 +23,11 @@
         android:entries="@array/queue_type_array"
         android:entryValues="@array/queue_type_array"
         android:defaultValue="unranked"/>
+    <EditTextPreference
+        android:key="User"
+        android:title="Your Summoner Name"
+        />
+
 
     <ListPreference
         android:key="Refresh_Rate_Pref"

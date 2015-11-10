@@ -12,6 +12,11 @@
         parent = "@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
         <item name = "android:background">@color/league_blue</item>
         <item name="android:fontFamily" tools:targetApi="16">Fritz-Quadrata</item>
+        <item name="logo">@mipmap/ic_braum_square</item>
+        <item name="android:displayOptions">showHome|useLogo</item>
+        <item name="displayOptions">showHome|useLogo</item>
+
+
 
         <item name="background">@color/league_blue</item>
 

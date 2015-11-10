@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.MultiSelectListPreference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
@@ -104,6 +105,9 @@ public class SettingsActivity extends PreferenceActivity {
         MultiSelectListPreference lp = (MultiSelectListPreference) findPreference("Remove_Summoner");
         lp.setEntryValues(entries);
         lp.setEntries(entries);
+
+        EditTextPreference ep = (EditTextPreference) findPreference("User");
+        ep.setDefaultValue(prefs.getString("User",""));
 
 
 
